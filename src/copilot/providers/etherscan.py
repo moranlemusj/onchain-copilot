@@ -1,8 +1,47 @@
+import json
 from typing import Any
 
 import httpx
 
 from ..config import settings
+
+
+def unwrap_source(source: str) -> str:
+    """Etherscan returns multi-file contracts in one of two wrapper formats:
+    a double-braced Standard JSON Input ({{ ... }}) or a plain JSON object
+    with a `sources` key. Both wrap a dict of path -> {content}. Flatten them
+    into concatenated Solidity text so downstream chunkers see real code, not
+    JSON. Single-file contracts (raw .sol) pass through unchanged.
+    """
+    if not source:
+        return source
+
+    stripped = source.strip()
+    if not (stripped.startswith("{") and stripped.endswith("}")):
+        return source
+    if stripped.startswith("{{") and stripped.endswith("}}"):
+        stripped = stripped[1:-1]
+
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        return source
+    if not isinstance(parsed, dict):
+        return source
+    sources = parsed.get("sources")
+    if not isinstance(sources, dict):
+        return source
+
+    return _flatten_sources(sources) or source
+
+
+def _flatten_sources(sources: dict) -> str:
+    parts = []
+    for path, blob in sources.items():
+        content = blob.get("content") if isinstance(blob, dict) else None
+        if content:
+            parts.append(f"// === {path} ===\n{content}")
+    return "\n\n".join(parts)
 
 
 class EtherscanClient:
@@ -54,7 +93,7 @@ class EtherscanClient:
         return {
             "name": entry.get("ContractName"),
             "compiler": entry.get("CompilerVersion"),
-            "source": source,
+            "source": unwrap_source(source),
             "abi": entry.get("ABI"),
             "optimization": entry.get("OptimizationUsed") == "1",
             "proxy": entry.get("Proxy") == "1",
