@@ -1,6 +1,7 @@
 from langchain_core.tools import tool
 
 from ..providers.alchemy import alchemy
+from ..validation import validate_eth_address
 
 
 @tool
@@ -14,6 +15,11 @@ def get_wallet_overview(address: str) -> dict:
     must be a 0x-prefixed 42-character hex string. ENS names must be resolved
     before calling this tool.
     """
+    try:
+        address = validate_eth_address(address)
+    except ValueError as e:
+        return {"error": str(e)}
+
     eth_balance = alchemy.get_balance_wei(address) / 1e18
 
     token_balances = alchemy.get_token_balances(address)

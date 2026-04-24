@@ -28,6 +28,9 @@ class AlchemyClient:
         result = self._rpc("alchemy_getTokenBalances", [address])
         return result.get("tokenBalances", [])
 
+    def get_token_metadata(self, contract: str) -> dict:
+        return self._rpc("alchemy_getTokenMetadata", [contract])
+
     def get_asset_transfers(
         self,
         *,
