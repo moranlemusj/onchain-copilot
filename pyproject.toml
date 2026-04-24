@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-copilot = "copilot.cli:main"
+onchain = "copilot.cli:main"
 
 [build-system]
 requires = ["hatchling"]
