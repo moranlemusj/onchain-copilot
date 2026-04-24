@@ -3,7 +3,7 @@ import os
 import pytest
 
 from copilot.tools.transaction import get_recent_transactions
-from copilot.tools.wallet import get_wallet_overview
+from copilot.tools.wallet import get_address_overview
 
 
 pytestmark = pytest.mark.skipif(
@@ -15,18 +15,25 @@ pytestmark = pytest.mark.skipif(
 VITALIK = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 
 
-def test_wallet_overview_returns_expected_shape():
-    result = get_wallet_overview.invoke({"address": VITALIK})
-    assert isinstance(result, dict)
+USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+
+def test_address_overview_eoa_shape():
+    result = get_address_overview.invoke({"address": VITALIK})
     assert result["address"] == VITALIK.lower()
+    assert result["is_contract"] is False
     assert isinstance(result["eth_balance"], (int, float))
-    assert result["eth_balance"] >= 0
     assert isinstance(result["erc20_token_count"], int)
-    assert result["erc20_token_count"] >= 0
 
 
-def test_wallet_overview_rejects_bad_address():
-    result = get_wallet_overview.invoke({"address": "vitalik.eth"})
+def test_address_overview_contract_flag():
+    result = get_address_overview.invoke({"address": USDC})
+    assert result["is_contract"] is True
+    assert result["known"]["name"] == "USDC"
+
+
+def test_address_overview_rejects_bad_address():
+    result = get_address_overview.invoke({"address": "vitalik.eth"})
     assert "error" in result
 
 
