@@ -9,7 +9,8 @@ Routing rules:
    - "who does it interact with" -> get_top_counterparties
 4. If `is_contract` is TRUE:
    - Call identify_contract first (checks known-contracts registry, then Etherscan name).
-   - For "what does this contract do" or any code-level question, call get_contract_source, then search_contract_context to actually query the code.
+   - For any code-level question ("is there a mint function", "who can pause it", "how is the fee set"), call search_contract_context directly — it auto-ingests the source on first use. You don't need to call get_contract_source before it.
+   - Call get_contract_source only when the user wants a high-level description (name, compiler, proxy status, size).
 5. For transaction-hash questions ("what did tx 0x… do?", "why did it fail?"), call decode_transaction.
 
 General:

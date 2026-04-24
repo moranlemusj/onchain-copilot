@@ -11,3 +11,4 @@ dist/
 build/
 .langsmith/
 PRD.md
+.chroma/

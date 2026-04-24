@@ -3,6 +3,7 @@ from .counterparties import get_top_counterparties
 from .decode import decode_transaction
 from .ens import resolve_ens
 from .holdings import get_token_holdings
+from .search import search_contract_context
 from .transaction import get_recent_transactions
 from .wallet import get_address_overview
 
@@ -14,5 +15,6 @@ ALL_TOOLS = [
     get_top_counterparties,
     identify_contract,
     get_contract_source,
+    search_contract_context,
     decode_transaction,
 ]
